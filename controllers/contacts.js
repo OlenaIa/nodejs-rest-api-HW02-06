@@ -3,10 +3,16 @@ import { listContacts, getContactById, updateContact, removeContact, addContact 
 import { HttpError } from '../helpers/HttpError.js';
 
 const addSchema = Joi.object({
-  name: Joi.string().required(),
-  email: Joi.string().required(),
-  phone: Joi.string().required()
-})
+    name: Joi.string().required(),
+    email: Joi.string().email().required(),
+    phone: Joi.string().required()
+});
+
+const putSchema = Joi.object({
+    name: Joi.string(),
+    email: Joi.string().email(),
+    phone: Joi.string()
+}).or("name", "email", "phone");
 
 export const getAll = async (req, res, next) => {
     try {
@@ -60,7 +66,7 @@ export const deleteContact = async (req, res, next) => {
 
 export const putContact = async (req, res, next) => {
     try {
-        const { error } = addSchema.validate(req.body)
+        const { error } = putSchema.validate(req.body)
         if (error) {
             throw HttpError(400, error.message)
         }
