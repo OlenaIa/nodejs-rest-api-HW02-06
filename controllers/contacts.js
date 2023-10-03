@@ -1,22 +1,9 @@
-import Joi from 'joi';
-import { listContacts, getContactById, updateContact, removeContact, addContact } from "../models/contacts.js"
 import { HttpError } from '../helpers/HttpError.js';
-
-const addSchema = Joi.object({
-    name: Joi.string().required(),
-    email: Joi.string().email().required(),
-    phone: Joi.string().required()
-});
-
-const putSchema = Joi.object({
-    name: Joi.string(),
-    email: Joi.string().email(),
-    phone: Joi.string()
-}).or("name", "email", "phone");
+import { Contact, addSchema, patchSchema, putSchema } from '../models/contact.js';
 
 export const getAll = async (req, res, next) => {
     try {
-        const result = await listContacts();
+        const result = await Contact.find();
         res.status(200).json(result)
     } catch (error) {
         next(error);
@@ -26,7 +13,7 @@ export const getAll = async (req, res, next) => {
 export const getById = async (req, res, next) => {
     try {
         const { contactId } = req.params
-        const result = await getContactById(contactId);
+        const result = await Contact.findOne({ _id: contactId });
         if (!result) {
             throw HttpError(404, "Not found")
         }
@@ -42,7 +29,7 @@ export const postContact = async (req, res, next) => {
         if (error) {
             throw HttpError(400, error.message)
         }
-        const result = await addContact(req.body);
+        const result = await Contact.create(req.body);
         res.status(201).json(result)
     } catch (error) {
         next(error);
@@ -52,7 +39,7 @@ export const postContact = async (req, res, next) => {
 export const deleteContact = async (req, res, next) => {
     try {
         const { contactId } = req.params
-        const result = await removeContact(contactId);
+        const result = await Contact.findByIdAndRemove({ _id: contactId });
         if (!result) {
             throw HttpError(404, "Not found")
         }
@@ -71,7 +58,24 @@ export const putContact = async (req, res, next) => {
             throw HttpError(400, error.message)
         }
         const { contactId } = req.params;
-        const result = await updateContact(contactId, req.body);
+        const result = await Contact.findByIdAndUpdate({ _id: contactId }, req.body, { new: true });
+        if (!result) {
+            throw HttpError(404, "Not found")
+        }
+        res.status(200).json(result)
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const patchFavorite = async (req, res, next) => {
+    try {
+        const { error } = patchSchema.validate(req.body)
+        if (error) {
+            throw HttpError(400, error.message)
+        }
+        const { contactId } = req.params;
+        const result = await Contact.findByIdAndUpdate({ _id: contactId }, req.body, { new: true });
         if (!result) {
             throw HttpError(404, "Not found")
         }
