@@ -22,7 +22,7 @@ export const register = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-   const { email, password } = req.body;
+    const { email, password } = req.body;
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -37,9 +37,9 @@ export const login = async (req, res) => {
     const payload = {
         id: user._id,
     };
-const { SECRET_KEY } = process.env;
-    const token = jwt.sign(payload, SECRET_KEY, {expiresIn: "23h"});
-
+    const { SECRET_KEY } = process.env;
+    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
+    await User.findByIdAndUpdate(user._id, { token });
     res.status(200).json({
         token,
         user: {
@@ -47,5 +47,22 @@ const { SECRET_KEY } = process.env;
             subscription: user.subscription
         }
     })
-}
+};
+
+export const getCurrent = async (req, res) => {
+    const { email, subscription } = req.user;
+    res.status(200).json({
+        email,
+        subscription
+    })
+};
+
+export const logout = async (req, res) => {
+    const { _id } = req.user;
+    await User.findByIdAndUpdate(_id, { token: '' });
+
+    res.status(204).json({
+        message: 'No Content'
+    })
+};
 

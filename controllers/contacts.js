@@ -1,8 +1,11 @@
 import { HttpError } from '../helpers/HttpError.js';
-import { Contact, addSchema, patchSchema, putSchema } from '../models/contact.js';
+import { Contact} from '../models/contact.js';
 
 export const getAll = async (req, res) => {
-    const result = await Contact.find();
+    const { _id: owner } = req.user;
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
+    const result = await Contact.find({owner}, '-createdAt, -updatedAt', {skip, limit}).populate('owner', 'email subscription');
     res.status(200).json(result);
 };
 
@@ -16,11 +19,8 @@ export const getById = async (req, res) => {
 };
 
 export const postContact = async (req, res) => {
-    const { error } = addSchema.validate(req.body)
-    if (error) {
-        throw HttpError(400, error.message)
-    }
-    const result = await Contact.create(req.body);
+    const { _id: owner } = req.user;
+    const result = await Contact.create({...req.body, owner});
     res.status(201).json(result);
 };
 
@@ -36,10 +36,6 @@ export const deleteContact = async (req, res) => {
 };
 
 export const putContact = async (req, res) => {
-    const { error } = putSchema.validate(req.body)
-    if (error) {
-        throw HttpError(400, error.message)
-    }
     const { contactId } = req.params;
     const result = await Contact.findByIdAndUpdate({ _id: contactId }, req.body, { new: true });
     if (!result) {
@@ -49,10 +45,6 @@ export const putContact = async (req, res) => {
 };
 
 export const patchFavorite = async (req, res) => {
-    const { error } = patchSchema.validate(req.body)
-    if (error) {
-        throw HttpError(400, error.message)
-    }
     const { contactId } = req.params;
     const result = await Contact.findByIdAndUpdate({ _id: contactId }, req.body, { new: true });
     if (!result) {
