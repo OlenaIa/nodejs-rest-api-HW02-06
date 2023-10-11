@@ -6,12 +6,21 @@ export const getAll = async (req, res) => {
     const { page = 1, limit = 20, favorite = null } = req.query;
     const skip = (page - 1) * limit;
     const condition = { owner };
-    if (favorite !== null)  {
+    if (favorite !== null) {
         condition.favorite = favorite;
     }
-    console.log(condition);
-    const result = await Contact.find(condition, '-createdAt -updatedAt', {skip, limit}).populate('owner', 'email subscription');
-    // .where({ favorite });
+    // console.log(condition);
+    const result = await Contact.find(condition, '-createdAt -updatedAt', { skip, limit }).populate('owner', 'email subscription');
+    // guess => .where({ favorite });
+
+    // Second version
+    // if (favorite !== null) {
+    //     const favoriteResult = result.filter(res => {
+    //         return res.favorite === Boolean(favorite)
+    //     })
+    //     console.log('favoriteResult =>', favoriteResult);
+    // }
+
     res.status(200).json(result);
 };
 
