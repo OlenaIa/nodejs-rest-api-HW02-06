@@ -36,4 +36,8 @@ export const logInSchema = Joi.object({
     email: Joi.string().pattern(emailValidPattern).required(),
 });
 
+export const patchSubscriptionSchema = Joi.object({
+    subscription: Joi.string().valid("starter", "pro", "business").required()
+});
+
 export const User = model('user', userSchema);
