@@ -9,9 +9,7 @@ export const getAll = async (req, res) => {
     if (favorite !== null) {
         condition.favorite = favorite;
     }
-    // console.log(condition);
     const result = await Contact.find(condition, '-createdAt -updatedAt', { skip, limit }).populate('owner', 'email subscription');
-    // guess => .where({ favorite });
 
     // Second version
     // if (favorite !== null) {
@@ -55,7 +53,7 @@ export const deleteContact = async (req, res) => {
 export const putContact = async (req, res) => {
     const { _id: owner } = req.user;
     const { contactId } = req.params;
-    const result = await Contact.findOneAndUpdate({ owner, _id: contactId }, req.body, { new: true });
+    const result = await Contact.findOneAndUpdate({ owner, _id: contactId }, req.body);
     if (!result) {
         throw HttpError(404, "Not found")
     }
@@ -65,7 +63,7 @@ export const putContact = async (req, res) => {
 export const patchFavorite = async (req, res) => {
     const { _id: owner } = req.user;
     const { contactId } = req.params;
-    const result = await Contact.findOneAndUpdate({ owner, _id: contactId }, req.body, { new: true });
+    const result = await Contact.findOneAndUpdate({ owner, _id: contactId }, req.body);
     if (!result) {
         throw HttpError(404, "Not found")
     }
