@@ -21,7 +21,14 @@ const userSchema = new Schema({
         enum: ["starter", "pro", "business"],
         default: "starter"
     },
-    token: String
+    avatarURL: {
+        type: String,
+        require: true
+    },
+    token: {
+        type: String,
+        default: ''
+    }
 }, { versionKey: false, timestamps: true });
 
 userSchema.post("save", handleMongooseError);
