@@ -6,7 +6,8 @@ import fs from 'fs/promises';
 import { HttpError } from '../helpers/HttpError.js';
 import { User } from '../models/user.js';
 
-const avatarsDir = path.join(process.cwd(), './', 'public', 'avatars');
+// const avatarsDir = path.join(process.cwd(), './', 'public', 'avatars');
+const avatarsDir = path.resolve('public', 'avatars');
 
 export const register = async (req, res) => {
     const { email, password } = req.body;
@@ -82,8 +83,8 @@ export const patchSubscription = async (req, res) => {
 
 export const updateAvatar = async (req, res) => {
     const { _id } = req.user;
-    const { path: tempUpload, originalname } = req.file;
-    const filename = `${_id}_${originalname}`;
+    const { path: tempUpload, filename } = req.file;
+    // const filename = `${_id}_${originalname}`;
     const resultUpload = path.join(avatarsDir, filename);
     await fs.rename(tempUpload, resultUpload);
 
