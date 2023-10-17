@@ -3,8 +3,10 @@ import jwt from 'jsonwebtoken';
 import gravatar from 'gravatar';
 import path from 'path';
 import fs from 'fs/promises';
+import Jimp from "jimp";
 import { HttpError } from '../helpers/HttpError.js';
 import { User } from '../models/user.js';
+import { tempDir } from '../middlewares/upload.js';
 
 // const avatarsDir = path.join(process.cwd(), './', 'public', 'avatars');
 const avatarsDir = path.resolve('public', 'avatars');
@@ -86,7 +88,14 @@ export const updateAvatar = async (req, res) => {
     const { path: tempUpload, filename } = req.file;
     // const filename = `${_id}_${originalname}`;
     const resultUpload = path.join(avatarsDir, filename);
-    await fs.rename(tempUpload, resultUpload);
+
+    Jimp.read(tempUpload, (err, image) => {
+        if (err) throw HttpError(404, err);
+        image.resize(250, 250)
+            .write(resultUpload);
+    });
+    await fs.unlink(tempUpload);
+    // await fs.rename(tempUpload, resultUpload);
 
     const avatarURL = path.join('avatars', filename);
     await User.findByIdAndUpdate(_id, { avatarURL });
