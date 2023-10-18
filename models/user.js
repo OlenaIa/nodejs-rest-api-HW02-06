@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 import Joi from 'joi';
-import { handleMongooseError } from "../helpers/handleMongooseError.js";
+import { handleMongooseError, runValidatorsAtUpdate } from "../helpers/hooks.js";
 
 const emailValidPattern = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
@@ -21,10 +21,19 @@ const userSchema = new Schema({
         enum: ["starter", "pro", "business"],
         default: "starter"
     },
-    token: String
+    avatarURL: {
+        type: String,
+        require: true
+    },
+    token: {
+        type: String,
+        default: ''
+    }
 }, { versionKey: false, timestamps: true });
 
 userSchema.post("save", handleMongooseError);
+userSchema.pre("findOneAndUpdate", runValidatorsAtUpdate);
+userSchema.post("findOneAndUpdate", handleMongooseError);
 
 export const registerSchema = Joi.object({
     password: Joi.string().min(5).required(),
